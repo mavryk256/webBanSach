@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Thanh Toán{% endblock %}
+{% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        a {
+            text-decoration: none;
+        }
+        .order-summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .total-price {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-control, .form-select {
+            margin-bottom: 15px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Thanh Toán Đơn Hàng</h2>
+    {% if alert_message %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ alert_message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    <div class="row">
+        <!-- Cột bên trái: Thông tin giao hàng -->
+        <div class="col-md-6">
+            <h4>Thông Tin Giao Hàng</h4>
+            <form method="POST" action="{{ url_for('checkout') }}">
+                <input type="hidden" name="action" value="confirm_checkout">
+                {% for order in orders %}
+                    <input type="hidden" name="selected_orders" value="{{ order.id }}">
+                {% endfor %}
+                <div class="mb-3">
+                    <label for="contact_name">Họ và Tên</label>
+                    <input type="text" class="form-control" id="contact_name" name="contact_name" value="{{ user.firstname + ' ' + user.lastname }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="contact_phone">Số Điện Thoại</label>
+                    <input type="text" class="form-control" id="contact_phone" name="contact_phone" value="{{ user.phone }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="contact_email">Email</label>
+                    <input type="email" class="form-control" id="contact_email" name="contact_email" value="{{ user.email }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="shipping_address">Địa Chỉ</label>
+                    <input type="text" class="form-control" id="shipping_address" name="shipping_address" value="{{ user.address.split(',')[0] if user.address else '' }}" placeholder="Số nhà, đường" required>
+                </div>
+                <div class="mb-3">
+                    <label for="city">Tỉnh/Thành Phố</label>
+                    <select class="form-select" id="city" name="city" required disabled>
+                        <option value="" disabled selected>Chọn Tỉnh/Thành</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="district">Quận/Huyện</label>
+                    <select class="form-select" id="district" name="district" required disabled>
+                        <option value="" disabled selected>Chọn Quận/Huyện</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="ward">Phường/Xã</label>
+                    <select class="form-select" id="ward" name="ward" required disabled>
+                        <option value="" disabled selected>Chọn Phường/Xã</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Xác Nhận Thanh Toán</button>
+            </form>
+        </div>
+        <!-- Cột bên phải: Tóm tắt đơn hàng -->
+        <div class="col-md-6">
+            <h4>Tóm Tắt Đơn Hàng</h4>
+            <div class="order-summary">
+                {% for order in orders %}
+                <div class="order-item">
+                    <span>{{ order.product.name }} (x{{ order.quantity }})</span>
+                    <span>{{ '{:,.0f}'.format(order.total_price) }} VND</span>
+                </div>
+                {% endfor %}
+                <hr>
+                <div class="order-item total-price">
+                    <span>Tổng Cộng:</span>
+                    <span>{{ '{:,.0f}'.format(total_price) }} VND</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='javascripts/checkout.js') }}"></script>
+{% endblock %}

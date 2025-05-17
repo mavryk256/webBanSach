@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Liên hệ{% endblock %}
+
+{% block content %}
+<style>
+    .contact-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 40px;
+        color: #fff;
+    }
+    .contact-info, .contact-form {
+        width: 48%;
+    }
+    .contact-form input, .contact-form textarea {
+        width: 100%;
+        padding: 12px;
+        margin-top: 12px;
+        background-color: #222;
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 4px;
+    }
+    .contact-form input:focus, .contact-form textarea:focus {
+        border-color: #ff9900;
+        outline: none;
+    }
+    .submit-btn {
+        background: #d94600;
+        color: #fff;
+        padding: 12px 24px;
+        border: none;
+        margin-top: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background 0.3s ease;
+    }
+    .submit-btn:hover {
+        background: #b03d00;
+    }
+    iframe {
+        width: 100%;
+        height: 300px;
+        border: none;
+        margin-top: 30px;
+    }
+    @media screen and (max-width: 768px) {
+        .contact-info, .contact-form {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="contact-container">
+    <div class="contact-info" style="color: black">
+        <h2>LIÊN HỆ</h2>
+        <p>📍 Địa chỉ: Số 87 Louis 2, Phường Đại Mỗ, Quận Nam Từ Liêm, Hà Nội</p>
+        <p>📞 Hotline: <strong>0828 899 333</strong></p>
+        <p>📧 Email: <strong>vuasachcuonline@gmail.com</strong></p>
+    </div>
+
+    <div class="contact-form">
+        <h3>Hãy để lại lời nhắn cho chúng tôi</h3>
+        <form method="POST" action="/contact" >
+            <input type="text" name="name" placeholder="Họ và tên" required style="background-color: white">
+            <input type="email" name="email" placeholder="Email" required style="background-color: white">
+            <input type="text" name="phone" placeholder="Số điện thoại" required style="background-color: white">
+            <textarea name="message" rows="5" placeholder="Nội dung liên hệ..." required style="background-color: white"></textarea >
+            <button class="submit-btn" type="submit">Gửi liên hệ của bạn</button>
+        </form>
+    </div>
+</div>
+
+<h3 style="margin-left: 40px; color: orange;">📍 ĐƯỜNG ĐẾN CỬA HÀNG</h3>
+<iframe
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.853671527405!2d105.75825597503058!3d20.9986320889996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135accfb82e0b9d%3A0x9a240df593306c2c!2zVsawxqFuIFPhuKGsY2ggQ-G7lQ!5e0!3m2!1svi!2s!4v1715763883462!5m2!1svi!2s"
+    allowfullscreen loading="lazy">
+</iframe>
+
+{% endblock %}

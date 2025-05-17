@@ -1,0 +1,198 @@
+{% extends "admin/admin_base.html" %}
+{% block title %}Quản Lý Sản Phẩm{% endblock %}
+{% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        th {
+        max-width: max-content;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h2 class="mb-4">Quản Lý Sản Phẩm</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info" role="alert">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Form thêm sản phẩm -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Thêm Sản Phẩm Mới</h5>
+            </div>
+            <div class="card-body">
+                {{ dropzone.create(action=url_for('manage_products')) }}
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tên Sản Phẩm</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Nhập tên sản phẩm" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="author" class="form-label">Tác Giả</label>
+                        <input type="text" class="form-control" id="author" name="author" placeholder="Nhập tên tác giả">
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Thể Loại</label>
+                        <select class="form-control" id="category" name="category" required>
+                            <option value="" disabled selected>-----Chọn thể loại-----</option>
+                            <option value="Sách tiểu thuyết">Sách tiểu thuyết</option>
+                            <option value="Sách truyện ngắn">Sách truyện ngắn</option>
+                            <option value="Truyện trinh thám">Truyện trinh thám</option>
+                            <option value="Truyện ngôn tình">Truyện ngôn tình</option>
+                            <option value="Văn học Việt Nam">Văn học Việt Nam</option>
+                            <option value="Sách marketing">Sách marketing</option>
+                            <option value="Sách đầu tư tài chính">Sách đầu tư tài chính</option>
+                            <option value="Cẩm nang làm bố mẹ">Cẩm nang làm bố mẹ</option>
+                            <option value="Sách thiếu nhi">Sách thiếu nhi</option>
+                            <option value="Sách khoa học">Sách khoa học</option>
+                            <option value="Sách lịch sử">Sách lịch sử</option>
+                            <option value="Sách kỹ năng">Sách kỹ năng</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Giá (VNĐ)</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" placeholder="Nhập giá" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount" class="form-label">Giảm Giá (%)</label>
+                        <input type="number" step="0.01" class="form-control" id="discount" name="discount" placeholder="Nhập giảm giá (nếu có)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Ảnh Sản Phẩm</label>
+                        <input type="file" class="form-control" id="file" name="file" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô Tả</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Nhập mô tả sản phẩm"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Thêm Sản Phẩm</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bảng danh sách sản phẩm -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Danh Sách Sản Phẩm</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Mã Sản Phẩm</th>
+                            <th>Ảnh</th>
+                            <th>Tên</th>
+                            <th>Tác Giả</th>
+                            <th>Thể Loại</th>
+                            <th>Giá (VNĐ)</th>
+                            <th>Giảm Giá (%)</th>
+                            <th>Mô Tả</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>SP{{ '%03d' % product.id }}</td>
+                            <td>
+                                {% if product.image %}
+                                    <img src="{{ url_for('static', filename='image/' + product.image) }}" alt="{{ product.name }}" class="img-fluid" style="max-width: 50px;">
+                                {% else %}
+                                    Không có ảnh
+                                {% endif %}
+                            </td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.author or 'Không có' }}</td>
+                            <td>{{ product.category }}</td>
+                            <td>{{ product.price | int }}</td>
+                            <td>{{ product.discount }}%</td>
+                            <td>{{ product.description }}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editProductModal{{ product.id }}">Sửa</button>
+
+                                <form method="POST" class="d-inline">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="editProductModal{{ product.id }}" tabindex="-1" aria-labelledby="editProductModalLabel{{ product.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editProductModalLabel{{ product.id }}">Sửa Sản Phẩm: {{ product.name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" enctype="multipart/form-data">
+                                            <input type="hidden" name="action" value="edit">
+                                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                                            <div class="mb-3">
+                                                <label for="name_{{ product.id }}" class="form-label">Tên Sản Phẩm</label>
+                                                <input type="text" class="form-control" id="name_{{ product.id }}" name="name" value="{{ product.name }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="author_{{ product.id }}" class="form-label">Tác Giả</label>
+                                                <input type="text" class="form-control" id="author_{{ product.id }}" name="author" value="{{ product.author or '' }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="category_{{ product.id }}" class="form-label">Thể Loại</label>
+                                                <select class="form-control" id="category_{{ product.id }}" name="category" required>
+                                                    <option value="" disabled>-----Chọn thể loại-----</option>
+                                                    <option value="Sách tiểu thuyết" {% if product.category == "Sách tiểu thuyết" %}selected{% endif %}>Sách tiểu thuyết</option>
+                                                    <option value="Sách truyện ngắn" {% if product.category == "Sách truyện ngắn" %}selected{% endif %}>Sách truyện ngắn</option>
+                                                    <option value="Truyện trinh thám" {% if product.category == "Truyện trinh thám" %}selected{% endif %}>Truyện trinh thám</option>
+                                                    <option value="Truyện ngôn tình" {% if product.category == "Truyện ngôn tình" %}selected{% endif %}>Truyện ngôn tình</option>
+                                                    <option value="Văn học Việt Nam" {% if product.category == "Văn học Việt Nam" %}selected{% endif %}>Văn học Việt Nam</option>
+                                                    <option value="Sách marketing" {% if product.category == "Sách marketing" %}selected{% endif %}>Sách marketing</option>
+                                                    <option value="Sách đầu tư tài chính" {% if product.category == "Sách đầu tư tài chính" %}selected{% endif %}>Sách đầu tư tài chính</option>
+                                                    <option value="Cẩm nang làm bố mẹ" {% if product.category == "Cẩm nang làm bố mẹ" %}selected{% endif %}>Cẩm nang làm bố mẹ</option>
+                                                    <option value="Sách thiếu nhi" {% if product.category == "Sách thiếu nhi" %}selected{% endif %}>Sách thiếu nhi</option>
+                                                    <option value="Sách khoa học" {% if product.category == "Sách khoa học" %}selected{% endif %}>Sách khoa học</option>
+                                                    <option value="Sách lịch sử" {% if product.category == "Sách lịch sử" %}selected{% endif %}>Sách lịch sử</option>
+                                                    <option value="Sách kỹ năng" {% if product.category == "Sách kỹ năng" %}selected{% endif %}>Sách kỹ năng</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="price_{{ product.id }}" class="form-label">Giá (VNĐ)</label>
+                                                <input type="number" step="0.01" class="form-control" id="price_{{ product.id }}" name="price" value="{{ product.price }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="discount_{{ product.id }}" class="form-label">Giảm Giá (%)</label>
+                                                <input type="number" step="0.01" class="form-control" id="discount_{{ product.id }}" name="discount" value="{{ product.discount }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="file_{{ product.id }}" class="form-label">Ảnh Sản Phẩm</label>
+                                                <input type="file" class="form-control" id="file_{{ product.id }}" name="file" accept="image/*">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="description_{{ product.id }}" class="form-label">Mô Tả</label>
+                                                <textarea class="form-control" id="description_{{ product.id }}" name="description" rows="3">{{ product.description }}</textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {{ dropzone.load_js() }}
+    {{ dropzone.config() }}
+{% endblock %}

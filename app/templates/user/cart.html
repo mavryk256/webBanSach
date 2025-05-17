@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Giỏ Hàng{% endblock %}
+{% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        a {
+            text-decoration: none;
+        }
+        .name-product:hover {
+            color: red;
+            cursor: pointer;
+        }
+        .trash-icon {
+            cursor: pointer;
+        }
+        .total-selected {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-left: 0;
+            text-align: left;
+            padding-left: 15px;
+        }
+        .checkout-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 80px;
+        }
+        .action-icons {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Giỏ Hàng Của Bạn</h2>
+    {% if alert_message %}
+        <div class="alert {% if 'không đủ hàng' in alert_message %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show" role="alert">
+            {{ alert_message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    {% if orders %}
+        <form id="cart-form" method="POST" action="{{ url_for('checkout') }}">
+            <input type="hidden" name="action" value="enter_checkout">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
+                        <th>ID Đơn Hàng</th>
+                        <th>Hình ảnh</th>
+                        <th>Sản Phẩm</th>
+                        <th>Số Lượng</th>
+                        <th>Tổng Tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr id="order-{{ order.id }}">
+                        <td>
+                            <input type="checkbox" name="selected_orders" value="{{ order.id }}" class="order-checkbox" onchange="updateTotalSelected()" data-total="{{ order.total_price }}">
+                        </td>
+                        <td>{{ order.product.id }}</td>
+                        <td>
+                            {% if order.product.image %}
+                                <img src="{{ url_for('static', filename='image/' + order.product.image) }}" class="card-img-top p-3" alt="{{ order.product.name }}" style="cursor: pointer; width: 100px; height: auto;" onclick="window.location.href='{{ url_for('product_detail', product_id=order.product.id) }}'">
+                            {% else %}
+                                <div class="card-img-top bg-light" style="height: 200px;"></div>
+                            {% endif %}
+                        </td>
+                        <td onclick="window.location.href='{{ url_for('product_detail', product_id=order.product.id) }}'" class="name-product">{{ order.product.name }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="updateQuantity({{ order.id }}, -1)">-</button>
+                                <input type="number" id="quantity-{{ order.id }}" value="{{ order.quantity }}" min="1" class="form-control text-center me-2" style="width: 60px;" readonly>
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="updateQuantity({{ order.id }}, 1)">+</button>
+                            </div>
+                        </td>
+                        <td id="total-price-{{ order.id }}">{{ '{:,.0f}'.format(order.total_price) }} VND</td>
+                        <td class="action-icons">
+                            <form method="POST" action="{{ url_for('delete_order', order_id=order.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-link p-0 trash-icon" title="Xóa">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="checkout-btn-container">
+                <div class="total-selected">Tổng tiền: <span id="selected-total">0</span> VND</div>
+                <button type="submit" class="btn btn-primary btn-sm" id="checkout-btn" disabled>Thanh Toán</button>
+            </div>
+        </form>
+    {% else %}
+        <p class="text-muted">Giỏ hàng của bạn trống.</p>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='javascripts/cart.js') }}"></script>
+{% endblock %}
